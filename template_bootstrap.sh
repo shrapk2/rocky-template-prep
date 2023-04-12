@@ -22,23 +22,23 @@ fi
 main() {
     echo "Starting bootstrap"
     dnf update -y
-    cat << EOF > /etc/sysctl.d/ipv6.conf
-net.ipv6.conf.all.disable_ipv6 = 1
-net.ipv6.conf.default.disable_ipv6 = 1
-net.ipv6.conf.lo.disable_ipv6 = 1
-EOF
+    cat <<-EOF > /etc/sysctl.d/ipv6.conf
+    net.ipv6.conf.all.disable_ipv6 = 1
+    net.ipv6.conf.default.disable_ipv6 = 1
+    net.ipv6.conf.lo.disable_ipv6 = 1
+    EOF
     firewall-cmd --permanent --remove-service dhcpv6-client
     firewall-cmd --reload
-    dnf install -y bind-utils net-tools screen unzip wget curl git gdisk vim bash-completion yum-utils yum-cron at deltarpm lsof perl open-vm-tools python3-pip sssd realmd oddjob oddjob-mkhomedir adcli samba-common-tools adcli samba-common-tools samba-common krb5-workstation openldap-clients policycoreutils-python nmap gcc make kernel-devel kernel-headers
+    dnf install -y vim bind-utils net-tools tmux unzip wget curl git gdisk vim bash-completion dnf-utils at lsof perl open-vm-tools python3-pip sssd realmd oddjob oddjob-mkhomedir adcli samba-common-tools adcli samba-common-tools samba-common krb5-workstation openldap-clients nmap gcc make kernel-devel kernel-headers
 
     if [ "$CONFIGURE_FIPS" = "true" ]; then
-        ssh_config
+        fips_config || exit 1
     fi
     if [ "$CONFIGURE_SSH" = "true" ]; then
-        ssh_config
+        ssh_config || exit 1
     fi
     if [ "$CONFIGURE_CA" = "true" ]; then
-        ca_config
+        ca_config || exit 1
     fi
 
     if [ "$CONFIGURE_SVCUSER" = "true" ]; then
@@ -62,23 +62,23 @@ fips_config() {
 # Function for SSH Configuration
 ssh_config() {
     echo "Configuring SSH"
-    cat << EOF > /etc/ssh/sshd_config
-AuthorizedKeysFile .ssh/authorized_keys
-PasswordAuthentication yes
-PermitRootLogin yes
-HostKey /etc/ssh/ssh_host_rsa_key
-SyslogFacility AUTHPRIV
-ChallengeResponseAuthentication no
-GSSAPIAuthentication yes
-GSSAPICleanupCredentials no
-UsePAM yes
-X11Forwarding yes
-AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
-AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
-AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
-AcceptEnv XMODIFIERS
-Subsystem sftp /usr/libexec/openssh/sftp-server
-EOF
+    cat <<-EOF > /etc/ssh/sshd_config
+    AuthorizedKeysFile .ssh/authorized_keys
+    PasswordAuthentication yes
+    PermitRootLogin yes
+    HostKey /etc/ssh/ssh_host_rsa_key
+    SyslogFacility AUTHPRIV
+    ChallengeResponseAuthentication no
+    GSSAPIAuthentication yes
+    GSSAPICleanupCredentials no
+    UsePAM yes
+    X11Forwarding yes
+    AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+    AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+    AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
+    AcceptEnv XMODIFIERS
+    Subsystem sftp /usr/libexec/openssh/sftp-server
+    EOF
     systemctl restart sshd
 }
 

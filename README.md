@@ -20,10 +20,9 @@ if [ $? -ne 0 ]; then
   systemctl restart network
 fi
 
-curl curl -o /tmp/template_bootstrap.sh $GITLABURL
-curl curl -o /tmp/template_sysprep.sh $GILABURL
-
-
+curl -o /tmp/template_bootstrap.sh https://raw.githubusercontent.com/shrapk2/rocky-template-prep/main/template_bootstrap.sh
+curl -o /tmp/template_sysprep.sh https://raw.githubusercontent.com/shrapk2/rocky-template-prep/main/template_sysprep.sh
+chmod +x /tmp/template*
 ```
 
 ## Future
