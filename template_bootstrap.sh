@@ -1,9 +1,9 @@
 #!/bin/bash
-CONFIGURE_FIPS=${CONFIGURE_FIPS:-false}
+CONFIGURE_FIPS=${CONFIGURE_FIPS:-true}
 CONFIGURE_SSH=${CONFIGURE_SSH:-true}
 CONFIGURE_CA=${CONFIGURE_CA:-false}
 CA_CERT_URL=${CA_CERT_URL:-https://raw.githubusercontent.com/RedHatGov/redhatgov.github.io/master/resources/CA.crt}
-CONFIGURE_SVCUSER=${CONFIGURE_SVCUSER:-false}
+CONFIGURE_SVCUSER=${CONFIGURE_SVCUSER:-true}
 SVC_USER=${SVC_USER:-svcuser}
 SVC_KEY_URL=${SVC_KEY_URL:-https://raw.githubusercontent.com/shrapk2/rocky-template-prep/main/sample_user.pub}
 SYSPREP_URL=${SYSPREP_URL:-https://raw.githubusercontent.com/shrapk2/rocky-template-prep/main/template_sysprep.sh}
@@ -17,7 +17,7 @@ if [ $? -ne 0 ]; then
   nmcli con mod ens192 ipv4.addresses $NMCLI_SYS_IP gw4 $NMCLI_SYS_GW
   nmcli con mod ens192 ipv4.dns $NMCLI_SYS_DNS
   nmcli con mod ens192 ipv4.method manual
-  systemctl restart network
+  nmcli networking off && sudo nmcli networking on
 fi
 
 main() {
@@ -30,7 +30,7 @@ net.ipv6.conf.lo.disable_ipv6 = 1
 EOF
     firewall-cmd --permanent --remove-service dhcpv6-client
     firewall-cmd --reload
-    dnf install -y vim bind-utils net-tools tmux unzip wget curl git gdisk vim bash-completion dnf-utils at lsof perl open-vm-tools python3-pip sssd realmd oddjob oddjob-mkhomedir adcli samba-common-tools adcli samba-common-tools samba-common krb5-workstation openldap-clients nmap gcc make kernel-devel kernel-headers
+    dnf install -y vim bind-utils net-tools tmux unzip wget rsyslog curl git gdisk vim bash-completion dnf-utils at lsof perl open-vm-tools python3-pip sssd realmd oddjob oddjob-mkhomedir adcli samba-common-tools adcli samba-common-tools samba-common krb5-workstation openldap-clients nmap gcc make kernel-devel kernel-headers
 
     if [ "$CONFIGURE_SSH" = "true" ]; then
         ssh_config || exit 1
@@ -70,11 +70,13 @@ fips_config() {
 ssh_config() {
     echo "Configuring SSH"
     cat <<-EOF > /etc/ssh/sshd_config
+PubkeyAuthentication yes
 AuthorizedKeysFile .ssh/authorized_keys
 PasswordAuthentication yes
 PermitRootLogin yes
 HostKey /etc/ssh/ssh_host_rsa_key
 SyslogFacility AUTHPRIV
+LogLevel INFO
 ChallengeResponseAuthentication no
 GSSAPIAuthentication yes
 GSSAPICleanupCredentials no
@@ -100,12 +102,14 @@ ca_config() {
 svcuser_config() {
     echo "Configuring $SVC_USER"
     useradd $SVC_USER
-    echo "$SVC_USER ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/$SVC_USER
+    echo "$SVC_USER ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/00-svcacct
     mkdir -p /home/$SVC_USER/.ssh
     curl -o /home/$SVC_USER/.ssh/authorized_keys $SVC_KEY_URL
     chown -R $SVC_USER:$SVC_USER /home/$SVC_USER/.ssh
     chmod 700 /home/$SVC_USER/.ssh
     chmod 600 /home/$SVC_USER/.ssh/authorized_keys
+    echo "AllowUsers $SVC_USER" >> /etc/ssh/sshd_config
+    systemctl restart sshd
 }
 
 main
