@@ -4,7 +4,7 @@ CONFIGURE_SSH=${CONFIGURE_SSH:-true}
 CONFIGURE_CA=${CONFIGURE_CA:-false}
 CA_CERT_URL=${CA_CERT_URL:-https://raw.githubusercontent.com/RedHatGov/redhatgov.github.io/master/resources/CA.crt}
 CONFIGURE_SVCUSER=${CONFIGURE_SVCUSER:-true}
-SVC_USER=${SVC_USER:-svcuser}
+SVC_USER=${SVC_USER:-loc.mgmtsvc}
 SVC_KEY_URL=${SVC_KEY_URL:-https://raw.githubusercontent.com/shrapk2/rocky-template-prep/main/sample_user.pub}
 SYSPREP_URL=${SYSPREP_URL:-https://raw.githubusercontent.com/shrapk2/rocky-template-prep/main/template_sysprep.sh}
 
