@@ -54,11 +54,10 @@ EOF
 
 fips_config() {
     echo "Configuring FIPS"
-    dnf install -y dracut-fips dracut-fips-aesni
-    dracut -v -f
-    grubby --update-kernel=$(grubby --default-kernel) --args=fips=1
-    uuid=$(findmnt -no uuid /boot)
-    [[ -n $uuid ]] && grubby --update-kernel=$(grubby --default-kernel) --args="boot=UUID=$uuid"
+    dnf install -y dracut-fips dracut-fips-aesni crypto-policies-scripts
+    fips-mode-setup --enable
+    grub2-mkconfig -o /boot/grub2/grub.cfg
+    echo "FIPS enabled"
 }
 
 # Function for SSH Configuration
