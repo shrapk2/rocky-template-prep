@@ -2,7 +2,7 @@
 
 To use these files on a new system, execute the below code snippet.
 
-Ensure to properly configure the `template_boostrap.sh` variables to your environment prior to execution.
+Ensure to properly configure the `template_bootstrap.sh` variables to your environment prior to execution.
 
 ```bash
 NMCLI_SYS_IP="10.60.2.76/24"
