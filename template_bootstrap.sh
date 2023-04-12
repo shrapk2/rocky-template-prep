@@ -31,18 +31,20 @@ EOF
     firewall-cmd --reload
     dnf install -y vim bind-utils net-tools tmux unzip wget curl git gdisk vim bash-completion dnf-utils at lsof perl open-vm-tools python3-pip sssd realmd oddjob oddjob-mkhomedir adcli samba-common-tools adcli samba-common-tools samba-common krb5-workstation openldap-clients nmap gcc make kernel-devel kernel-headers
 
-    if [ "$CONFIGURE_FIPS" = "true" ]; then
-        fips_config || exit 1
-    fi
     if [ "$CONFIGURE_SSH" = "true" ]; then
         ssh_config || exit 1
     fi
+
     if [ "$CONFIGURE_CA" = "true" ]; then
         ca_config || exit 1
     fi
 
     if [ "$CONFIGURE_SVCUSER" = "true" ]; then
         svcuser_config
+    fi
+
+    if [ "$CONFIGURE_FIPS" = "true" ]; then
+        fips_config || exit 1
     fi
     echo "Finished bootstrap"
     echo "Rebooting in 5 seconds"
@@ -52,11 +54,11 @@ EOF
 
 fips_config() {
     echo "Configuring FIPS"
+    dnf install -y dracut-fips dracut-fips-aesni
     dracut -v -f
-    grubby --update-kernel=$(grubby --default-kernel) --args="fips=1"
+    grubby --update-kernel=$(grubby --default-kernel) --args=fips=1
     uuid=$(findmnt -no uuid /boot)
     [[ -n $uuid ]] && grubby --update-kernel=$(grubby --default-kernel) --args="boot=UUID=$uuid"
-    dnf install -y dracut-fips dracut-fips-aesni
 }
 
 # Function for SSH Configuration
