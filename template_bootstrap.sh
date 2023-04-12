@@ -5,7 +5,7 @@ CONFIGURE_CA=${CONFIGURE_CA:-false}
 CA_CERT_URL=${CA_CERT_URL:-https://raw.githubusercontent.com/RedHatGov/redhatgov.github.io/master/resources/CA.crt}
 CONFIGURE_SVCUSER=${CONFIGURE_SVCUSER:-false}
 SVC_USER=${SVC_USER:-svcuser}
-SVC_KEY_URL=${SVC_KEY_URL:-https://raw.githubusercontent.com/shrapk2/rocky-template-prep/main/svc_user.pub}
+SVC_KEY_URL=${SVC_KEY_URL:-https://raw.githubusercontent.com/shrapk2/rocky-template-prep/main/sample_user.pub}
 SYSPREP_URL=${SYSPREP_URL:-https://raw.githubusercontent.com/shrapk2/rocky-template-prep/main/template_sysprep.sh}
 
 # Test if we can access the internet
