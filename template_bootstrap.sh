@@ -3,7 +3,7 @@ CONFIGURE_FIPS=${CONFIGURE_FIPS:-false}
 CONFIGURE_SSH=${CONFIGURE_SSH:-true}
 CONFIGURE_CA=${CONFIGURE_CA:-false}
 CA_CERT_URL=${CA_CERT_URL:-https://raw.githubusercontent.com/RedHatGov/redhatgov.github.io/master/resources/CA.crt}
-CONFIGURE_SVCUSER=${CONFIGURE_SVCUSER:-true}
+CONFIGURE_SVCUSER=${CONFIGURE_SVCUSER:-false}
 SVC_USER=${SVC_USER:-svcuser}
 SVC_KEY_URL=${SVC_KEY_URL:-https://raw.githubusercontent.com/RedHatGov/redhatgov.github.io/master/resources/svcuser.pub}
 
@@ -26,7 +26,7 @@ main() {
     net.ipv6.conf.all.disable_ipv6 = 1
     net.ipv6.conf.default.disable_ipv6 = 1
     net.ipv6.conf.lo.disable_ipv6 = 1
-    EOF
+EOF
     firewall-cmd --permanent --remove-service dhcpv6-client
     firewall-cmd --reload
     dnf install -y vim bind-utils net-tools tmux unzip wget curl git gdisk vim bash-completion dnf-utils at lsof perl open-vm-tools python3-pip sssd realmd oddjob oddjob-mkhomedir adcli samba-common-tools adcli samba-common-tools samba-common krb5-workstation openldap-clients nmap gcc make kernel-devel kernel-headers
@@ -78,7 +78,7 @@ ssh_config() {
     AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
     AcceptEnv XMODIFIERS
     Subsystem sftp /usr/libexec/openssh/sftp-server
-    EOF
+EOF
     systemctl restart sshd
 }
 
