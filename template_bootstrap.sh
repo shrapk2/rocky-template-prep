@@ -5,7 +5,8 @@ CONFIGURE_CA=${CONFIGURE_CA:-false}
 CA_CERT_URL=${CA_CERT_URL:-https://raw.githubusercontent.com/RedHatGov/redhatgov.github.io/master/resources/CA.crt}
 CONFIGURE_SVCUSER=${CONFIGURE_SVCUSER:-false}
 SVC_USER=${SVC_USER:-svcuser}
-SVC_KEY_URL=${SVC_KEY_URL:-https://raw.githubusercontent.com/RedHatGov/redhatgov.github.io/master/resources/svcuser.pub}
+SVC_KEY_URL=${SVC_KEY_URL:-https://raw.githubusercontent.com/shrapk2/rocky-template-prep/main/svc_user.pub}
+SYSPREP_URL=${SYSPREP_URL:-https://raw.githubusercontent.com/shrapk2/rocky-template-prep/main/template_sysprep.sh}
 
 # Test if we can access the internet
 ping -c 1 8.8.8.8
@@ -23,9 +24,9 @@ main() {
     echo "Starting bootstrap"
     dnf update -y
     cat <<-EOF > /etc/sysctl.d/ipv6.conf
-    net.ipv6.conf.all.disable_ipv6 = 1
-    net.ipv6.conf.default.disable_ipv6 = 1
-    net.ipv6.conf.lo.disable_ipv6 = 1
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
 EOF
     firewall-cmd --permanent --remove-service dhcpv6-client
     firewall-cmd --reload
@@ -47,6 +48,11 @@ EOF
         fips_config || exit 1
     fi
     echo "Finished bootstrap"
+
+    echo "Pulling sysprep script"
+    curl -o /tmp/template_sysprep.sh $SYSPREP_URL
+    chmod +x /tmp/template_sysprep.sh
+
     echo "Rebooting in 5 seconds"
     sleep 5
     reboot
@@ -64,21 +70,21 @@ fips_config() {
 ssh_config() {
     echo "Configuring SSH"
     cat <<-EOF > /etc/ssh/sshd_config
-    AuthorizedKeysFile .ssh/authorized_keys
-    PasswordAuthentication yes
-    PermitRootLogin yes
-    HostKey /etc/ssh/ssh_host_rsa_key
-    SyslogFacility AUTHPRIV
-    ChallengeResponseAuthentication no
-    GSSAPIAuthentication yes
-    GSSAPICleanupCredentials no
-    UsePAM yes
-    X11Forwarding yes
-    AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
-    AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
-    AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
-    AcceptEnv XMODIFIERS
-    Subsystem sftp /usr/libexec/openssh/sftp-server
+AuthorizedKeysFile .ssh/authorized_keys
+PasswordAuthentication yes
+PermitRootLogin yes
+HostKey /etc/ssh/ssh_host_rsa_key
+SyslogFacility AUTHPRIV
+ChallengeResponseAuthentication no
+GSSAPIAuthentication yes
+GSSAPICleanupCredentials no
+UsePAM yes
+X11Forwarding yes
+AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
+AcceptEnv XMODIFIERS
+Subsystem sftp /usr/libexec/openssh/sftp-server
 EOF
     systemctl restart sshd
 }
